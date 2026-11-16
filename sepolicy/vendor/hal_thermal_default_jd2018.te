@@ -1,0 +1,16 @@
+# 通用 thermal HAL（thermal.default）跑在 hal_thermal_default 域里。
+# AOSP 的 system/sepolicy/vendor/hal_thermal_default.te 只声明了域和
+# hal_server_domain，没有任何 sysfs 读权限；而 hardware/libhardware/modules/
+# thermal 的实现需要读：
+#   /sys/class/thermal/thermal_zone*/{temp,type}   (sysfs_thermal)
+#   /sys/devices/system/cpu/cpu*/online            (sysfs_devices_system_cpu)
+#   /proc/stat                                     (proc_stat)
+# 本项目目前是 permissive，转 enforcing 前必须有这些规则。
+
+allow hal_thermal_default proc_stat:file r_file_perms;
+
+allow hal_thermal_default sysfs_devices_system_cpu:dir r_dir_perms;
+allow hal_thermal_default sysfs_devices_system_cpu:file r_file_perms;
+
+allow hal_thermal_default sysfs_thermal:dir r_dir_perms;
+allow hal_thermal_default sysfs_thermal:file r_file_perms;

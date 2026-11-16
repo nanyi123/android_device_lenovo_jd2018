@@ -1,0 +1,69 @@
+# 重建联想 ZUI modem 所需的 RFS 只读固件映射树
+# modem root PD 通过 RFS/TFTP 加载 user PD 固件（wlanmdsp.mbn 等），
+# 路径模板见 modem 镜像: /readonly/firmware/image/%s 与 /readonly/vendor/firmware/%s
+# 映射关系与 stock ZUI vendor 的 /vendor/rfs 符号链接一致。
+on post-fs-data
+    # persist / tombstones 后端目录
+    mkdir /mnt/vendor/persist/rfs/mdm/mpss 0770 system system
+    mkdir /mnt/vendor/persist/rfs/mdm/adsp 0770 system system
+    mkdir /mnt/vendor/persist/rfs/mdm/cdsp 0770 system system
+    mkdir /mnt/vendor/persist/rfs/mdm/slpi 0770 system system
+    mkdir /mnt/vendor/persist/rfs/mdm/tn 0770 system system
+    mkdir /mnt/vendor/persist/rfs/msm/mpss 0770 system system
+    mkdir /mnt/vendor/persist/rfs/msm/adsp 0770 system system
+    mkdir /mnt/vendor/persist/rfs/msm/cdsp 0770 system system
+    mkdir /mnt/vendor/persist/rfs/msm/slpi 0770 system system
+    mkdir /mnt/vendor/persist/rfs/apq/gnss 0770 system system
+    mkdir /mnt/vendor/persist/rfs/shared 0770 system system
+    mkdir /mnt/vendor/persist/hlos_rfs/shared 0770 system system
+    mkdir /data/vendor/tombstones/rfs/modem 0770 system system
+    mkdir /data/vendor/tombstones/rfs/lpass 0770 system system
+    mkdir /data/vendor/tombstones/rfs/cdsp 0770 system system
+    mkdir /data/vendor/tombstones/rfs/slpi 0770 system system
+    mkdir /data/vendor/tombstones/rfs/tn 0770 system system
+
+    # /vendor/rfs 树（只读固件映射到 modem 分区挂载点与 vendor firmware）
+    mkdir /vendor/rfs/mdm/mpss/readonly/vendor 0755 root root
+    mkdir /vendor/rfs/mdm/adsp/readonly/vendor 0755 root root
+    mkdir /vendor/rfs/mdm/cdsp/readonly 0755 root root
+    mkdir /vendor/rfs/mdm/slpi/readonly 0755 root root
+    mkdir /vendor/rfs/mdm/tn/readonly 0755 root root
+    mkdir /vendor/rfs/apq/gnss/readonly/vendor 0755 root root
+
+    symlink /vendor/firmware_mnt /vendor/rfs/mdm/mpss/readonly/firmware
+    symlink /vendor/firmware /vendor/rfs/mdm/mpss/readonly/vendor/firmware
+    symlink /vendor/firmware_mnt /vendor/rfs/mdm/adsp/readonly/firmware
+    symlink /vendor/firmware /vendor/rfs/mdm/adsp/readonly/vendor/firmware
+    symlink /vendor/firmware_mnt /vendor/rfs/mdm/cdsp/readonly/firmware
+    symlink /vendor/firmware_mnt /vendor/rfs/mdm/slpi/readonly/firmware
+    symlink /vendor/firmware_mnt /vendor/rfs/mdm/tn/readonly/firmware
+    symlink /vendor/firmware_mnt /vendor/rfs/apq/gnss/readonly/firmware
+    symlink /vendor/firmware /vendor/rfs/apq/gnss/readonly/vendor/firmware
+
+    symlink /mnt/vendor/persist/hlos_rfs/shared /vendor/rfs/mdm/mpss/hlos
+    symlink /mnt/vendor/persist/hlos_rfs/shared /vendor/rfs/mdm/adsp/hlos
+    symlink /mnt/vendor/persist/hlos_rfs/shared /vendor/rfs/mdm/cdsp/hlos
+    symlink /mnt/vendor/persist/hlos_rfs/shared /vendor/rfs/mdm/slpi/hlos
+    symlink /mnt/vendor/persist/hlos_rfs/shared /vendor/rfs/mdm/tn/hlos
+    symlink /mnt/vendor/persist/hlos_rfs/shared /vendor/rfs/apq/gnss/hlos
+
+    symlink /mnt/vendor/persist/rfs/mdm/mpss /vendor/rfs/mdm/mpss/readwrite
+    symlink /mnt/vendor/persist/rfs/mdm/adsp /vendor/rfs/mdm/adsp/readwrite
+    symlink /mnt/vendor/persist/rfs/mdm/cdsp /vendor/rfs/mdm/cdsp/readwrite
+    symlink /mnt/vendor/persist/rfs/mdm/slpi /vendor/rfs/mdm/slpi/readwrite
+    symlink /mnt/vendor/persist/rfs/mdm/tn /vendor/rfs/mdm/tn/readwrite
+    symlink /mnt/vendor/persist/rfs/apq/gnss /vendor/rfs/apq/gnss/readwrite
+
+    symlink /mnt/vendor/persist/rfs/shared /vendor/rfs/mdm/mpss/shared
+    symlink /mnt/vendor/persist/rfs/shared /vendor/rfs/mdm/adsp/shared
+    symlink /mnt/vendor/persist/rfs/shared /vendor/rfs/mdm/cdsp/shared
+    symlink /mnt/vendor/persist/rfs/shared /vendor/rfs/mdm/slpi/shared
+    symlink /mnt/vendor/persist/rfs/shared /vendor/rfs/mdm/tn/shared
+    symlink /mnt/vendor/persist/rfs/shared /vendor/rfs/apq/gnss/shared
+
+    symlink /data/vendor/tombstones/rfs/modem /vendor/rfs/mdm/mpss/ramdumps
+    symlink /data/vendor/tombstones/rfs/lpass /vendor/rfs/mdm/adsp/ramdumps
+    symlink /data/vendor/tombstones/rfs/cdsp /vendor/rfs/mdm/cdsp/ramdumps
+    symlink /data/vendor/tombstones/rfs/slpi /vendor/rfs/mdm/slpi/ramdumps
+    symlink /data/vendor/tombstones/rfs/tn /vendor/rfs/mdm/tn/ramdumps
+    symlink /data/vendor/tombstones/rfs/modem /vendor/rfs/apq/gnss/ramdumps

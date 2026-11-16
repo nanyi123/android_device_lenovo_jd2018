@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  中国大陆可用性覆盖（Android 11+ 的 captive portal 探测 URL 归 NetworkStack 管）
+
+  AOSP 默认探测 connectivitycheck.gstatic.com / www.google.com，国内不可达 →
+  框架判定"已连接但无互联网" → A14 把该网络写成
+  NETWORK_SELECTION_DISABLED_NO_INTERNET_PERMANENT（永久禁止 autojoin，重启不清），
+  表现为"WiFi 能扫到、能手动连，但开机永远不自动连"。
+
+  这里是 NetworkStack 官方预留的配置钩子（config_captive_portal_*），
+  在 build 期生效（不用 run-time RRO）。
+  注意：fallback 是 string-array，不是 string；也没有 config_captive_portal_use_https
+  （是否用 https 由 Settings.Global.captive_portal_use_https 控制）。
+-->
+<resources>
+    <string name="config_captive_portal_http_url" translatable="false">http://connect.rom.miui.com/generate_204</string>
+    <string name="config_captive_portal_https_url" translatable="false">https://connect.rom.miui.com/generate_204</string>
+    <string-array name="config_captive_portal_fallback_urls" translatable="false">
+        <item>http://connect.rom.miui.com/generate_204</item>
+    </string-array>
+</resources>

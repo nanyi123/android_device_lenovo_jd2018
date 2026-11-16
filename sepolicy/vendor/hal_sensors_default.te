@@ -1,0 +1,12 @@
+# cm36656 光感/接近：ASH 内核框架 + sensors.ALSPS.so（HAL 插件，system 用户）
+#
+# 驱动把属性节点放在 /sys/class/sensors/{lsensor,psensor}/ 下，AOSP 把
+# /sys/class/sensors 目录标为 sysfs_sensors，而各属性文件（含 switch）落在 sysfs。
+# HAL 需要：读属性、写 switch 使能。
+allow hal_sensors_default sysfs:file { read open write };
+allow hal_sensors_default sysfs_sensors:dir r_file_perms;
+allow hal_sensors_default sysfs_sensors:lnk_file r_file_perms;
+
+# 字符设备 /dev/{lsensor,psensor,frgbsensor}，见 file_contexts
+allow hal_sensors_default sensors_device:chr_file rw_file_perms;
+dontaudit hal_sensors_default sensors_device:chr_file { getattr ioctl };

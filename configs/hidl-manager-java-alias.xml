@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  兼容别名（2026-11-16）
+
+  ZUI 预编译的 qcrilmsgtunnel.apk（QTI A9）在 manifest 里声明：
+      <uses-library android:name="android.hidl.manager@1.0-java"/>
+  而 AOSP 14 的 platform.xml 只注册了带连字符的名字：
+      <library name="android.hidl.manager-V1.0-java" file=".../android.hidl.manager-V1.0-java.jar"/>
+
+  名字对不上 → uses-library 解析失败 → 该 jar 不会进 APK 的 classloader →
+  开机时 QcrilMsgTunnelIfaceManager.<init> 抛
+      NoClassDefFoundError: Landroid/hidl/manager/V1_0/IServiceNotification$Stub
+
+  这里用同一份 jar 再注册一个别名，让老 APK 的 @ 写法也能解析。
+  不涉及 BOOTCLASSPATH，不重编 boot image，纯增量。
+-->
+<permissions>
+    <library name="android.hidl.manager@1.0-java"
+             file="/system/framework/android.hidl.manager-V1.0-java.jar" />
+</permissions>

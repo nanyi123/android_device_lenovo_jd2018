@@ -1,0 +1,49 @@
+// jd2018: A2DP 音频 HAL（blob 形式）
+//
+// 为什么不直接用 packages/modules/Bluetooth/system/audio_a2dp_hw 里的源码模块：
+//   1) 它有 apex_available: ["com.android.btservices"]，加进 PRODUCT_PACKAGES
+//      会被 build/make/core/tasks/platform_availability_check.mk 直接拒绝
+//   2) 它依赖的 libbluetooth_gd / libosi / libbluetooth_log 都是 APEX-only，
+//      无法产生 vendor 变体，所以也不能靠 vendor: true 解决
+//
+// 因此改为「编一次 + 固化成 blob」：产物由
+//   m audio.a2dp.default        （绕过 PRODUCT_PACKAGES 的可用性检查）
+// 生成，再从 out/soong/.intermediates/... 取 strip 后的 .so 放进本目录。
+// 重新生成命令：
+//   cp out/soong/.intermediates/packages/modules/Bluetooth/system/audio_a2dp_hw/\
+//      audio.a2dp.default/android_arm_armv8-a_cortex-a73_shared_cfi/*/audio.a2dp.default.so \
+//      device/lenovo/jd2018/prebuilts/a2dp/lib/hw/
+//
+// 装在 /vendor/lib{,64}/hw/：A14 的 audio module 由 vendor 域的
+// android.hardware.audio.service 通过 hw_get_module("a2dp") 加载，只搜 /vendor。
+// device 上的 audio service 是 32 位（ELF 32-bit LSB arm），32 位版必需；
+// 64 位版为兼容 64 位进程一并提供。
+//
+// shared_libs 里的 libchrome 必须留着：产物 DT_NEEDED 有它（external/libchrome），
+// 它 vendor_available=true，声明后 soong 会把它的 vendor 变体一并装进 /vendor/lib。
+
+cc_prebuilt_library_shared {
+    name: "audio.a2dp.default.jd2018",
+    // 输出文件名必须是 audio.a2dp.default.so，hw_get_module("a2dp") 找的就是这个名字
+    stem: "audio.a2dp.default",
+    arch: {
+        arm: {
+            srcs: ["lib/hw/audio.a2dp.default.so"],
+        },
+        arm64: {
+            srcs: ["lib64/hw/audio.a2dp.default.so"],
+        },
+    },
+    vendor: true,
+    relative_install_path: "hw",
+    compile_multilib: "both",
+    // blob 已 strip，别再动它（重 strip 会破坏 cfi 段）
+    strip: {
+        none: true,
+    },
+    shared_libs: [
+        "libchrome",
+    ],
+    // 只作 HAL 模块用，不给 APEX
+    check_elf_files: false,
+}

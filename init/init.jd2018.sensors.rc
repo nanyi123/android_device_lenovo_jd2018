@@ -1,0 +1,29 @@
+# 光感 / 接近传感器（cm36656，Capella）
+#
+# 本机跑的是华硕 X00QD 4.19 内核，cm36656 由华硕 ASH 传感器框架驱动，向用户空间
+# 暴露三样东西：
+#   /sys/class/sensors/lsensor, /sys/class/sensors/psensor   （属性 + switch 使能）
+#   /dev/lsensor (503:1), /dev/psensor (503:0)               （字符设备）
+#   /dev/input/event{4,5}  "ASUS Proximitysensor"/"ASUS Lightsensor"（事件上报）
+#
+# HAL 插件 sensors.ALSPS.so 以 system 用户运行（vendor.sensors-hal-1-0），默认权限下：
+#   - /dev/lsensor, /dev/psensor 是 0600 root:root → open 失败
+#   - /sys/class/sensors/*/switch 是 0664 root:root → 写失败，sensor 无法使能
+#   - /dev/input/event* 是 0660 root:input，HAL 已在 input 组，无需处理
+#
+# ZUI 原厂 init.lenovo.rc 做的是同一件事，只是它指向 ZUI 自己驱动的
+# /sys/class/sensors/{lights,proximity}/sensors_enable（本内核不存在这些路径）。
+on post-fs-data
+    chown system system /dev/lsensor
+    chmod 0660 /dev/lsensor
+    chown system system /dev/psensor
+    chmod 0660 /dev/psensor
+    chown system system /dev/frgbsensor
+    chmod 0660 /dev/frgbsensor
+
+    chown system system /sys/class/sensors/lsensor/switch
+    chmod 0660 /sys/class/sensors/lsensor/switch
+    chown system system /sys/class/sensors/psensor/switch
+    chmod 0660 /sys/class/sensors/psensor/switch
+    chown system system /sys/class/sensors/frgbsensor/switch
+    chmod 0660 /sys/class/sensors/frgbsensor/switch

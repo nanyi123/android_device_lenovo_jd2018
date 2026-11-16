@@ -1,0 +1,17 @@
+// librpmb 预编译库：取自 ASUS ZenFone 5 (X00QD) Android 14 vendor 包
+// 原 ZUI 版（Android 9 / 内核 4.4）只认 /dev/block/mmcblk0rpmb，
+// 而本机 4.19 内核使用的是字符设备 /dev/mmcblk0rpmb，导致 qseecomd 的
+// rpmb_init_service 失败、RPMB 监听服务不启动，进而使 TEE 侧 gatekeeper/keymaster
+// 无法读写任何持久化数据（enroll 恒返回 -30）。
+// 备份的 ZUI 原版见 reference/librpmb.so.zui-a9.orig
+cc_prebuilt_library_shared {
+    name: "librpmb",
+    stem: "librpmb",
+    vendor: true,
+    compile_multilib: "64",
+    srcs: ["lib64/librpmb.so"],
+    strip: {
+        none: true,
+    },
+    check_elf_files: false,
+}
