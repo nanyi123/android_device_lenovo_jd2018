@@ -2,4 +2,6 @@
 <resources>
     <string name="screen_gestures_panel_summary" translatable="false">设备特色手势</string>
     <string name="moto_gestures_panel_title">联想手势</string>
+    <string name="position_travel_title">位置穿越</string>
+    <string name="position_travel_summary">应用专属虚拟定位与路线模拟</string>
 </resources>

@@ -80,6 +80,25 @@
                 android:resource="@string/screen_gestures_panel_summary" />
         </activity>
 
+        <activity
+            android:name=".PositionTravelActivity"
+            android:label="@string/position_travel_title"
+            android:theme="@android:style/Theme.NoDisplay"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.android.settings.action.IA_SETTINGS" />
+            </intent-filter>
+            <meta-data
+                android:name="com.android.settings.category"
+                android:value="com.android.settings.category.ia.system" />
+            <meta-data
+                android:name="com.android.settings.icon"
+                android:resource="@drawable/ic_settings_location" />
+            <meta-data
+                android:name="com.android.settings.summary"
+                android:resource="@string/position_travel_summary" />
+        </activity>
+
     </application>
 
 </manifest>

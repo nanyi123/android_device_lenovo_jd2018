@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout_joystick_container"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <!-- 1. 折叠模式：小巧贴边悬浮球 (Mini Bubble) -->
+    <FrameLayout
+        android:id="@+id/layout_bubble"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:background="@drawable/bg_bubble_circle"
+        android:elevation="6dp"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_joystick_bubble" />
+    </FrameLayout>
+
+    <!-- 2. 展开模式：原厂 155dp x 155dp 紧凑半透明圆形十字摇杆 -->
+    <RelativeLayout
+        android:id="@+id/layout_expanded_joystick"
+        android:layout_width="155dp"
+        android:layout_height="155dp"
+        android:descendantFocusability="beforeDescendants"
+        android:visibility="visible">
+
+        <!-- 十字 D-Pad 控件 -->
+        <ImageButton
+            android:id="@+id/btn_up"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:background="#00000000"
+            android:gravity="center"
+            android:src="@drawable/up_select" />
+
+        <ImageButton
+            android:id="@+id/btn_down"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:background="#00000000"
+            android:gravity="center"
+            android:src="@drawable/down_select" />
+
+        <ImageButton
+            android:id="@+id/btn_left"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:background="#00000000"
+            android:gravity="center"
+            android:src="@drawable/left_select" />
+
+        <ImageButton
+            android:id="@+id/btn_right"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:background="#00000000"
+            android:gravity="center"
+            android:src="@drawable/right_select" />
+
+        <!-- 中心圆盘：点击折叠为浮球，拖动移动浮窗 -->
+        <ImageView
+            android:id="@+id/btn_center"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_centerInParent="true"
+            android:scaleType="fitCenter"
+            android:src="@drawable/center_select" />
+
+        <!-- 极简收起/关闭小按钮（右上角与左上角） -->
+        <ImageView
+            android:id="@+id/btn_minimize"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:padding="4dp"
+            android:src="@drawable/ic_minimize" />
+
+        <ImageView
+            android:id="@+id/btn_close"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:padding="4dp"
+            android:src="@drawable/ic_close_small" />
+
+    </RelativeLayout>
+
+</FrameLayout>

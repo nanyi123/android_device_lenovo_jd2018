@@ -80,7 +80,14 @@ public class ChopChopSensor implements SensorEventListener, UpdatedStateNotifier
     private SensorEventListener mProxListener = new SensorEventListener() {
         @Override
         public synchronized void onSensorChanged(SensorEvent event) {
-            mProxIsCovered = event.values[0] < mProx.getMaximumRange();
+            // jd2018 (ZUI blob / sensors.ALSPS.so) reports proximity in a non-standard way:
+            //   near  = 0.0
+            //   away  = 5.0   (but sensor.getMaximumRange() declares 10.0)
+            // The stock MoKee/Lineage check ``value < maxRange`` therefore evaluates true
+            // even when the phone is lying on a table (5.0 < 10.0), so every chop-chop
+            // gesture was discarded as "proximity covered" and the torch never turned on.
+            // Use a fraction of maxRange that sits between the two real reported levels.
+            mProxIsCovered = event.values[0] < (mProx.getMaximumRange() / 4.0f);
         }
 
         @Override

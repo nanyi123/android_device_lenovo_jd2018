@@ -1,0 +1,24 @@
+android_app {
+    name: "PositionTravel",
+    srcs: ["src/**/*.java"],
+    resource_dirs: ["res"],
+    asset_dirs: ["assets"],
+    certificate: "platform",
+    platform_apis: true,
+    privileged: true,
+    static_libs: [
+        "androidx.core_core",
+        "androidx.appcompat_appcompat",
+        "androidx.fragment_fragment",
+        "androidx.recyclerview_recyclerview",
+        "androidx.cardview_cardview",
+        "com.google.android.material_material",
+    ],
+    required: ["privapp-permissions-position-travel.xml"],
+}
+
+prebuilt_etc {
+    name: "privapp-permissions-position-travel.xml",
+    sub_dir: "permissions",
+    src: "privapp-permissions-position-travel.xml",
+}
