@@ -14,7 +14,7 @@ ro.vendor.audio.sdk.ssr=false
 vendor.audio.dolby.ds2.enabled=false
 vendor.audio.dolby.ds2.hardbypass=false
 vendor.audio.flac.sw.decoder.24bit=true
-vendor.audio_hal.period_size=192
+vendor.audio_hal.period_size=240
 vendor.audio.hw.aac.encoder=true
 vendor.audio.noisy.broadcast.delay=600
 vendor.audio.offload.buffer.size.kb=64
@@ -202,9 +202,9 @@ persist.audio.fluence.voicecomm=true
 persist.vendor.bt.aac_frm_ctl.enabled=true
 #Set speaker protection cal tx path sampling rate to 48k
 vendor.audio.spkr_prot.tx.sampling_rate=48000
-vendor.audio_hal.in_period_size=144
-vendor.audio_hal.period_multiplier=3
-vendor.audio.adm.buffering.ms=2
+vendor.audio_hal.in_period_size=240
+vendor.audio_hal.period_multiplier=4
+vendor.audio.adm.buffering.ms=3
 
 # Bluetooth profiles (Android 14: 运行时 sysprop，缺省 false)
 # 同时也在 product.prop 写了一份：product 侧是 AOSP 正统位置，vendor 侧保证不受
