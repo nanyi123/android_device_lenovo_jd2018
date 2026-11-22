@@ -1935,6 +1935,7 @@
     </path>
 
     <path name="speaker">
+        <path name="speaker-mono" />
     </path>
 
     <path name="speaker-mono">
@@ -2054,6 +2055,7 @@
     </path>
 
     <path name="handset">
+        <ctl name="TFA_CHIP_SELECTOR" value="3" />
     </path>
 
     <path name="handset-mic">
