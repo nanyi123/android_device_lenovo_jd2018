@@ -77,6 +77,22 @@ static std::string getScaledDutyPcts(int brightness) {
 
     return buf;
 }
+
+static void writeNode(std::ofstream& stream, int value) {
+    if (stream.is_open()) {
+        stream.clear();
+        stream << value << std::endl;
+        stream.flush();
+    }
+}
+
+static void writeNode(std::ofstream& stream, const std::string& value) {
+    if (stream.is_open()) {
+        stream.clear();
+        stream << value << std::endl;
+        stream.flush();
+    }
+}
 }  // anonymous namespace
 
 namespace android {
@@ -92,7 +108,8 @@ Light::Light(std::pair<std::ofstream, uint32_t>&& lcd_backlight,
              std::ofstream&& red_pause_lo, std::ofstream&& green_pause_lo, std::ofstream&& blue_pause_lo,
              std::ofstream&& red_pause_hi, std::ofstream&& green_pause_hi, std::ofstream&& blue_pause_hi,
              std::ofstream&& red_ramp_step_ms, std::ofstream&& green_ramp_step_ms, std::ofstream&& blue_ramp_step_ms,
-             std::ofstream&& red_blink, std::ofstream&& green_blink, std::ofstream&& blue_blink)
+             std::ofstream&& red_blink, std::ofstream&& green_blink, std::ofstream&& blue_blink,
+             std::ofstream&& red_breath, std::ofstream&& green_breath, std::ofstream&& blue_breath)
     : mLcdBacklight(std::move(lcd_backlight)),
       mRedLed(std::move(red_led)),
       mGreenLed(std::move(green_led)),
@@ -114,7 +131,10 @@ Light::Light(std::pair<std::ofstream, uint32_t>&& lcd_backlight,
       mBlueRampStepMs(std::move(blue_ramp_step_ms)),
       mRedBlink(std::move(red_blink)),
       mGreenBlink(std::move(green_blink)),
-      mBlueBlink(std::move(blue_blink)) {
+      mBlueBlink(std::move(blue_blink)),
+      mRedBreath(std::move(red_breath)),
+      mGreenBreath(std::move(green_breath)),
+      mBlueBreath(std::move(blue_breath)) {
     auto attnFn(std::bind(&Light::setAttentionLight, this, std::placeholders::_1));
     auto backlightFn(std::bind(&Light::setLcdBacklight, this, std::placeholders::_1));
     auto batteryFn(std::bind(&Light::setBatteryLight, this, std::placeholders::_1));
@@ -386,12 +406,15 @@ void Light::setSpeakerBatteryLightLocked() {
         setSpeakerLightLocked(mBatteryState);
     } else {
         // Lights off
-        mRedLed << 0 << std::endl;
-        mGreenLed << 0 << std::endl;
-        mBlueLed << 0 << std::endl;
-        mRedBlink << 0 << std::endl;
-        mGreenBlink << 0 << std::endl;
-        mBlueBlink << 0 << std::endl;
+        writeNode(mRedBreath, 0);
+        writeNode(mGreenBreath, 0);
+        writeNode(mBlueBreath, 0);
+        writeNode(mRedLed, 0);
+        writeNode(mGreenLed, 0);
+        writeNode(mBlueLed, 0);
+        writeNode(mRedBlink, 0);
+        writeNode(mGreenBlink, 0);
+        writeNode(mBlueBlink, 0);
     }
 }
 
@@ -404,62 +427,92 @@ void Light::setSpeakerLightLocked(const LightState& state) {
         case Flash::TIMED:
             onMs = state.flashOnMs;
             offMs = state.flashOffMs;
+            blink = onMs > 0 && offMs > 0;
+            break;
+        case Flash::HARDWARE:
+            onMs = state.flashOnMs;
+            offMs = state.flashOffMs;
+            blink = true;
             break;
         case Flash::NONE:
         default:
             onMs = 0;
             offMs = 0;
+            blink = false;
             break;
     }
 
     red = (colorRGB >> 16) & 0xff;
     green = (colorRGB >> 8) & 0xff;
     blue = colorRGB & 0xff;
-    blink = onMs > 0 && offMs > 0;
 
     // Disable all blinking to start
-    mRedBlink << 0 << std::endl;
-    mGreenBlink << 0 << std::endl;
-    mBlueBlink << 0 << std::endl;
+    writeNode(mRedBlink, 0);
+    writeNode(mGreenBlink, 0);
+    writeNode(mBlueBlink, 0);
 
     if (blink) {
-        stepDuration = RAMP_STEP_DURATION;
-        pauseHi = onMs - (stepDuration * RAMP_SIZE * 2);
+        if (mGreenBlink.is_open() && mRedDutyPcts.is_open()) {
+            stepDuration = RAMP_STEP_DURATION;
+            pauseHi = onMs - (stepDuration * RAMP_SIZE * 2);
 
-        if (stepDuration * RAMP_SIZE * 2 > onMs) {
-            stepDuration = onMs / (RAMP_SIZE * 2);
-            pauseHi = 0;
+            if (stepDuration * RAMP_SIZE * 2 > onMs) {
+                stepDuration = onMs / (RAMP_SIZE * 2);
+                pauseHi = 0;
+            }
+
+            // Red
+            writeNode(mRedStartIdx, 0);
+            writeNode(mRedDutyPcts, getScaledDutyPcts(red));
+            writeNode(mRedPauseLo, offMs);
+            writeNode(mRedPauseHi, pauseHi);
+            writeNode(mRedRampStepMs, stepDuration);
+
+            // Green
+            writeNode(mGreenStartIdx, RAMP_SIZE);
+            writeNode(mGreenDutyPcts, getScaledDutyPcts(green));
+            writeNode(mGreenPauseLo, offMs);
+            writeNode(mGreenPauseHi, pauseHi);
+            writeNode(mGreenRampStepMs, stepDuration);
+
+            // Blue
+            writeNode(mBlueStartIdx, RAMP_SIZE * 2);
+            writeNode(mBlueDutyPcts, getScaledDutyPcts(blue));
+            writeNode(mBluePauseLo, offMs);
+            writeNode(mBluePauseHi, pauseHi);
+            writeNode(mBlueRampStepMs, stepDuration);
+
+            writeNode(mGreenBlink, 1);
+        } else {
+            // 4.19 kernel with qti-tri-led: breath_store automatically sets brightness to LED_FULL.
+            // Writing to brightness node resets breath to false, so only write to breath for active channels.
+            if (red > 0) {
+                writeNode(mRedBreath, 1);
+            } else {
+                writeNode(mRedBreath, 0);
+                writeNode(mRedLed, 0);
+            }
+            if (green > 0) {
+                writeNode(mGreenBreath, 1);
+            } else {
+                writeNode(mGreenBreath, 0);
+                writeNode(mGreenLed, 0);
+            }
+            if (blue > 0) {
+                writeNode(mBlueBreath, 1);
+            } else {
+                writeNode(mBlueBreath, 0);
+                writeNode(mBlueLed, 0);
+            }
         }
-
-        // Red
-        mRedStartIdx << 0 << std::endl;
-        mRedDutyPcts << getScaledDutyPcts(red) << std::endl;
-        mRedPauseLo << offMs << std::endl;
-        mRedPauseHi << pauseHi << std::endl;
-        mRedRampStepMs << stepDuration << std::endl;
-
-        // Green
-        mGreenStartIdx << RAMP_SIZE << std::endl;
-        mGreenDutyPcts << getScaledDutyPcts(green) << std::endl;
-        mGreenPauseLo << offMs << std::endl;
-        mGreenPauseHi << pauseHi << std::endl;
-        mGreenRampStepMs << stepDuration << std::endl;
-
-        // Blue
-        mBlueStartIdx << RAMP_SIZE * 2 << std::endl;
-        mBlueDutyPcts << getScaledDutyPcts(blue) << std::endl;
-        mBluePauseLo << offMs << std::endl;
-        mBluePauseHi << pauseHi << std::endl;
-        mBlueRampStepMs << stepDuration << std::endl;
-
-        // Start the party
-        //mRedBlink << 1 << std::endl;
-        mGreenBlink << 1 << std::endl;
-        //mBlueBlink << 1 << std::endl;
     } else {
-        mRedLed << red << std::endl;
-        mGreenLed << green << std::endl;
-        mBlueLed << blue << std::endl;
+        // Solid light (e.g. battery charging)
+        writeNode(mRedBreath, 0);
+        writeNode(mGreenBreath, 0);
+        writeNode(mBlueBreath, 0);
+        writeNode(mRedLed, red);
+        writeNode(mGreenLed, green);
+        writeNode(mBlueLed, blue);
     }
 }
 

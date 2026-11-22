@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     SPDX-FileCopyrightText: The LineageOS Project
+     SPDX-License-Identifier: Apache-2.0
+-->
+<resources>
+    <!-- Capabilities of the device lights, flags:
+         0: No light
+         1: RGB notification light
+         2: RGB battery light
+         8: Pulsating notification light
+         16: Multi-segment battery light
+         32: Adjustable notification light brightness
+         64: Battery light
+         128: Adjustable battery light brightness
+         256: Breathing notification light
+         512: No brightness control
+         1 | 2 | 8 | 64 = 75
+    -->
+    <integer name="config_deviceLightCapabilities">75</integer>
+</resources>

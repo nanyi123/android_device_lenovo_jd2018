@@ -211,7 +211,8 @@ PRODUCT_PACKAGES += \
     android.hardware.camera.provider@2.6 \
     vendor.qti.hardware.camera.device@1.0 \
     android.frameworks.displayservice@1.0_32 \
-    libxml2
+    libxml2 \
+    libxml2.vendor
 
 # CNE
 PRODUCT_PACKAGES += \

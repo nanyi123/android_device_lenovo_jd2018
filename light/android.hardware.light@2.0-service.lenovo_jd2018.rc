@@ -4,6 +4,10 @@ on init
     chown system system /sys/class/leds/green/brightness
     chown system system /sys/class/leds/blue/brightness
 
+    chown system system /sys/class/leds/red/breath
+    chown system system /sys/class/leds/green/breath
+    chown system system /sys/class/leds/blue/breath
+
     chown system system /sys/class/leds/red/pause_lo
     chown system system /sys/class/leds/green/pause_lo
     chown system system /sys/class/leds/blue/pause_lo
@@ -37,6 +41,10 @@ on init
     chmod 660 /sys/class/leds/red/brightness
     chmod 660 /sys/class/leds/green/brightness
     chmod 660 /sys/class/leds/blue/brightness
+
+    chmod 660 /sys/class/leds/red/breath
+    chmod 660 /sys/class/leds/green/breath
+    chmod 660 /sys/class/leds/blue/breath
 
     chmod 660 /sys/class/leds/red/ramp_step_ms
     chmod 660 /sys/class/leds/green/ramp_step_ms

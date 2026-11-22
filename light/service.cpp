@@ -34,25 +34,28 @@ const static std::string kLcdBacklightPath = "/sys/class/leds/lcd-backlight/brig
 const static std::string kLcdMaxBacklightPath = "/sys/class/leds/lcd-backlight/max_brightness";
 const static std::string kRedLedPath = "/sys/class/leds/red/brightness";
 const static std::string kGreenLedPath = "/sys/class/leds/green/brightness";
-const static std::string kBlueLedPath = "/sys/class/leds/green/brightness";
+const static std::string kBlueLedPath = "/sys/class/leds/blue/brightness";
+const static std::string kRedBreathPath = "/sys/class/leds/red/breath";
+const static std::string kGreenBreathPath = "/sys/class/leds/green/breath";
+const static std::string kBlueBreathPath = "/sys/class/leds/blue/breath";
 const static std::string kRedDutyPctsPath = "/sys/class/leds/red/duty_pcts";
 const static std::string kGreenDutyPctsPath = "/sys/class/leds/green/duty_pcts";
-const static std::string kBlueDutyPctsPath = "/sys/class/leds/green/duty_pcts";
+const static std::string kBlueDutyPctsPath = "/sys/class/leds/blue/duty_pcts";
 const static std::string kRedStartIdxPath = "/sys/class/leds/red/start_idx";
 const static std::string kGreenStartIdxPath = "/sys/class/leds/green/start_idx";
-const static std::string kBlueStartIdxPath = "/sys/class/leds/green/start_idx";
+const static std::string kBlueStartIdxPath = "/sys/class/leds/blue/start_idx";
 const static std::string kRedPauseLoPath = "/sys/class/leds/red/pause_lo";
 const static std::string kGreenPauseLoPath = "/sys/class/leds/green/pause_lo";
-const static std::string kBluePauseLoPath = "/sys/class/leds/green/pause_lo";
+const static std::string kBluePauseLoPath = "/sys/class/leds/blue/pause_lo";
 const static std::string kRedPauseHiPath = "/sys/class/leds/red/pause_hi";
 const static std::string kGreenPauseHiPath = "/sys/class/leds/green/pause_hi";
-const static std::string kBluePauseHiPath = "/sys/class/leds/green/pause_hi";
+const static std::string kBluePauseHiPath = "/sys/class/leds/blue/pause_hi";
 const static std::string kRedRampStepMsPath = "/sys/class/leds/red/ramp_step_ms";
 const static std::string kGreenRampStepMsPath = "/sys/class/leds/green/ramp_step_ms";
-const static std::string kBlueRampStepMsPath = "/sys/class/leds/green/ramp_step_ms";
+const static std::string kBlueRampStepMsPath = "/sys/class/leds/blue/ramp_step_ms";
 const static std::string kRedBlinkPath = "/sys/class/leds/red/blink";
 const static std::string kGreenBlinkPath = "/sys/class/leds/green/blink";
-const static std::string kBlueBlinkPath = "/sys/class/leds/green/blink";
+const static std::string kBlueBlinkPath = "/sys/class/leds/blue/blink";
 
 int main() {
     uint32_t lcdMaxBrightness = 255;
@@ -220,6 +223,10 @@ int main() {
         LOG(WARNING) << "Continuing without it (华硕 4.19 内核无 LUT 属性, 呼吸灯降级为常亮)";
     }
 
+    std::ofstream redBreath(kRedBreathPath);
+    std::ofstream greenBreath(kGreenBreathPath);
+    std::ofstream blueBreath(kBlueBreathPath);
+
     android::sp<ILight> service = new Light(
             {std::move(lcdBacklight), lcdMaxBrightness},
             std::move(redLed), std::move(greenLed), std::move(blueLed),
@@ -228,7 +235,8 @@ int main() {
             std::move(redPauseLo), std::move(greenPauseLo), std::move(bluePauseLo),
             std::move(redPauseHi), std::move(greenPauseHi), std::move(bluePauseHi),
             std::move(redRampStepMs), std::move(greenRampStepMs), std::move(blueRampStepMs),
-            std::move(redBlink), std::move(greenBlink), std::move(blueBlink));
+            std::move(redBlink), std::move(greenBlink), std::move(blueBlink),
+            std::move(redBreath), std::move(greenBreath), std::move(blueBreath));
 
     configureRpcThreadpool(1, true);
 
