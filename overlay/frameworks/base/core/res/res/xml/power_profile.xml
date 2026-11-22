@@ -57,7 +57,7 @@
     <item name="cpu.idle">4</item>
     <item name="cpu.active">3</item>
     <item name="cpu.suspend">4</item>
-    <item name="battery.capacity">4000</item>
+    <item name="battery.capacity">3300</item>
     <item name="bluetooth.active">50</item>
     <item name="bluetooth.at">2</item>
     <item name="bluetooth.on">2</item>

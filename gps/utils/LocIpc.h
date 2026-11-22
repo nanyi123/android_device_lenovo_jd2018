@@ -117,7 +117,9 @@ public:
     }
 
     inline ~LocIpcSender() {
-        if (nullptr != mSocket && mSocket.unique()) {
+        // std::shared_ptr::unique() 在 C++20 被移除（A16 默认 gnu++20），
+        // use_count() == 1 语义完全等价：当前是最后一个持有者。
+        if (nullptr != mSocket && mSocket.use_count() == 1) {
             ::close(*mSocket);
         }
     }

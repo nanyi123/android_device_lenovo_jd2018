@@ -289,6 +289,8 @@ vendor.display.disable_scaler=1
 
 # USB / ADB
 persist.sys.usb.config=adb
-ro.adb.secure=0
+# ro.adb.secure 不能写在这里：A16 的 gen_build_prop.py 已固定往 system/build.prop
+# 写 ro.adb.secure=1，重复赋值会让 post_process_props 直接失败。
+# 免认证由 WITH_ADB_INSECURE（vendor/lineage/config/common.mk）写进 system_ext。
 
 

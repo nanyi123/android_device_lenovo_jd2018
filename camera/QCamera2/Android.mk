@@ -43,9 +43,9 @@ LOCAL_SRC_FILES += \
         HAL3/QCamera3StreamMem.cpp
 
 ifeq (1,$(filter 1,$(shell echo "$$(( $(PLATFORM_SDK_VERSION) >= 31 ))" )))
-LOCAL_CFLAGS := -Wall -Wextra -Werror -Wno-compound-token-split-by-macro -Wno-error=fortify-source -Wno-error=unused-variable -Wno-error=unused-parameter
+LOCAL_CFLAGS := -Wall -Wextra -Werror -Wno-error=unused-but-set-variable -Wno-compound-token-split-by-macro -Wno-error=fortify-source -Wno-error=unused-variable -Wno-error=unused-parameter
 else
-LOCAL_CFLAGS := -Wall -Wextra -Werror -Wno-error=fortify-source -Wno-error=unused-variable -Wno-error=unused-parameter
+LOCAL_CFLAGS := -Wall -Wextra -Werror -Wno-error=unused-but-set-variable -Wno-error=fortify-source -Wno-error=unused-variable -Wno-error=unused-parameter
 endif
 LOCAL_CFLAGS += -DFDLEAK_FLAG
 LOCAL_CFLAGS += -DMEMLEAK_FLAG
@@ -139,8 +139,8 @@ ifneq ($(TARGET_KERNEL_VERSION),$(filter $(TARGET_KERNEL_VERSION),3.18 4.4 4.9))
     LOCAL_C_INCLUDES += $(LIBION_HEADER_PATHS)
   else
     LOCAL_C_INCLUDES += \
-            system/core/libion/kernel-headers \
-            system/core/libion/include
+            system/memory/libion/kernel-headers \
+            system/memory/libion/include
   endif
 endif
 
@@ -157,7 +157,7 @@ LOCAL_C_INCLUDES += \
 
 ifeq ($(TARGET_COMPILE_WITH_MSM_KERNEL),true)
 LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
-LOCAL_ADDITIONAL_DEPENDENCIES := $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
+LOCAL_ADDITIONAL_DEPENDENCIES := $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/.headers_stamp
 endif
 ifeq ($(TARGET_TS_MAKEUP),true)
 LOCAL_CFLAGS += -DTARGET_TS_MAKEUP

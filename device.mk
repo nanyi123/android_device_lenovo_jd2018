@@ -86,8 +86,11 @@ TARGET_SCREEN_WIDTH := 1080
 DEVICE_PACKAGE_OVERLAYS += \
     $(LOCAL_PATH)/overlay
 
-PRODUCT_ENFORCE_RRO_TARGETS := \
-    framework-res
+# 不强制 framework-res 走 RRO：overlay 走 legacy static overlay，res/xml 与 res/values
+# 一起直接编进 framework-res.apk，少一层运行时间接（RRO apk 会散在 vendor 分区，
+# 改资源还得连带刷 vendor）。RRO 本身能覆盖 res/xml，这里只是选择更直接的路径。
+# PRODUCT_ENFORCE_RRO_TARGETS := \
+#     framework-res
 
 # Permissions
 PRODUCT_COPY_FILES += \
@@ -149,7 +152,6 @@ PRODUCT_PACKAGES += \
     audio.primary.sdm660 \
     audio.r_submix.default \
     audio.usb.default \
-    libaacwrapper \
     libaudio-resampler \
     libqcompostprocbundle \
     libqcomvisualizer \
@@ -182,8 +184,7 @@ PRODUCT_PACKAGES += \
     android.hardware.bluetooth@1.0.vendor \
     com.dsi.ant@1.0.vendor \
     vendor.qti.hardware.btconfigstore@1.0.vendor \
-    vendor.qti.hardware.btconfigstore@2.0.vendor \
-    libbthost_if
+    vendor.qti.hardware.btconfigstore@2.0.vendor
 
 # Sensor HAL conf file
 PRODUCT_COPY_FILES += \
@@ -222,8 +223,7 @@ PRODUCT_PACKAGES += \
     android.hardware.graphics.composer@2.1-service \
     android.hardware.graphics.mapper@3.0-impl-qti-display \
     android.hardware.graphics.mapper@4.0-impl-qti-display \
-    android.hardware.memtrack@1.0-impl \
-    android.hardware.memtrack@1.0-service \
+    vendor.qti.hardware.memtrack-service \
     android.frameworks.displayservice@1.0 \
     android.frameworks.displayservice@1.0.vendor \
     vendor.display.config@1.0 \
@@ -234,13 +234,12 @@ PRODUCT_PACKAGES += \
     vendor.qti.hardware.display.mapper@1.1.vendor \
     vendor.qti.hardware.display.mapper@2.0.vendor \
     gralloc.sdm660 \
-    hwcomposer.sdm660 \
+    hwcomposer.qcom \
     libdisplayconfig \
     libgralloc.qti \
     libqdMetaData \
     libqdMetaData.system \
-    libtinyxml \
-    memtrack.sdm660
+    libtinyxml
 
 # Display Device Config
 PRODUCT_COPY_FILES += \
@@ -251,7 +250,8 @@ PRODUCT_PACKAGES += \
 
 # Doze
 PRODUCT_PACKAGES += \
-    MoKeeActions
+    MoKeeActions \
+    PositionTravel
 
 # DRM
 PRODUCT_PACKAGES += \
@@ -357,13 +357,27 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     librpmb
 
+# A9 时代位于 /system 的三个库：A9 的 vendor blob 直接依赖它们，
+# A16 的 vendor 命名空间不再可见（不在 LLNDK 名单），必须随 /vendor 提供。
+# 用 PRODUCT_COPY_FILES 直接摆到 /vendor/lib{,64}：
+#   - cc_prebuilt_library_shared 会撞 AOSP vendor 变体的 elf symbols 规则
+#     （multiple rules generate .../symbols/vendor/lib{,64}/libpng.so）
+#   - prebuilt_etc 的 sub_dir 相对 /vendor/etc，装不到 /vendor/lib
+# 文件来源与失败清单见 prebuilts/a9-system-libs/ 目录。
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/prebuilts/a9-system-libs/lib64/libsqlite.so:$(TARGET_COPY_OUT_VENDOR)/lib64/libsqlite.so \
+    $(LOCAL_PATH)/prebuilts/a9-system-libs/lib/libsqlite.so:$(TARGET_COPY_OUT_VENDOR)/lib/libsqlite.so \
+    $(LOCAL_PATH)/prebuilts/a9-system-libs/lib64/libpower.so:$(TARGET_COPY_OUT_VENDOR)/lib64/libpower.so \
+    $(LOCAL_PATH)/prebuilts/a9-system-libs/lib/libpower.so:$(TARGET_COPY_OUT_VENDOR)/lib/libpower.so \
+    $(LOCAL_PATH)/prebuilts/a9-system-libs/lib/libpng.so:$(TARGET_COPY_OUT_VENDOR)/lib/libpng.so
+
 # Lights
 PRODUCT_PACKAGES += \
     android.hardware.light@2.0-service.lenovo_jd2018
 
 # LiveDisplay native
 PRODUCT_PACKAGES += \
-    vendor.lineage.livedisplay@2.0-service-sdm
+    vendor.lineage.livedisplay-service.sdm
 
 # Media
 PRODUCT_COPY_FILES += \
@@ -384,12 +398,7 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     libc2dcolorconvert \
     libmm-omxcore \
-    libOmxAacEnc \
-    libOmxAmrEnc \
     libOmxCore \
-    libOmxEvrcEnc \
-    libOmxG711Enc \
-    libOmxQcelp13Enc \
     libOmxVdec \
     libOmxVenc \
     libstagefrighthw
@@ -416,10 +425,11 @@ PRODUCT_PACKAGES += \
     libqti_vndfwk_detect \
     libqti_vndfwk_detect.vendor
 
-# Vibrator
+# Vibrator (A16 只有 AIDL HAL；HIDL vibrator 已从 AOSP 移除)
+# example HAL 是 no-op；换成 Lineage legacy 包装，通过 hw_get_module 加载
+# vendor 的 vibrator.default.so，转发到 timed_output（实机震动已验证）
 PRODUCT_PACKAGES += \
-    android.hardware.vibrator@1.0-impl \
-    android.hardware.vibrator@1.0-service \
+    android.hardware.vibrator-service.legacy
 
 # Ramdisk
 PRODUCT_PACKAGES += \
@@ -531,14 +541,22 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES_DEBUG += \
     update_engine_client
 
-# USB
+# USB AIDL HAL (Type-C / Host / Port Role switching)
 PRODUCT_PACKAGES += \
-    android.hardware.usb@1.0-service
+    android.hardware.usb-service.example
 
-# VNDK
+# A16 起 adb root 由 system_ext 的 adb_root 服务（IADBRootService）仲裁：
+# adbd 只读 service.adb.root 属性，而属性写入必须先经该服务 getEnabled() 放行。
+# 不装它 → adb root 静默失败（属性都没被写）。lineage 的 common.mk 只在
+# WITH_SU=true 时才带，本设备不用 su，需要自己装。
+ifneq ($(TARGET_BUILD_VARIANT),user)
 PRODUCT_PACKAGES += \
-    libgui_vendor \
-    vndk_package
+    adb_root
+endif
+
+# VNDK (A16 已移除 vndk_package)
+PRODUCT_PACKAGES += \
+    libgui_vendor
 
 # Wifi
 PRODUCT_PACKAGES += \
@@ -573,7 +591,8 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/rootdir/etc/fstab.qcom:$(TARGET_COPY_OUT_RECOVERY)/root/first_stage_ramdisk/fstab.jd2018 \
     $(LOCAL_PATH)/rootdir/etc/fstab.qcom:$(TARGET_COPY_OUT_RECOVERY)/root/fstab.jd2018 \
     $(LOCAL_PATH)/rootdir/etc/fstab.qcom:$(TARGET_COPY_OUT_RECOVERY)/root/first_stage_ramdisk/system/etc/fstab.jd2018 \
-    $(LOCAL_PATH)/rootdir/etc/fstab.qcom:$(TARGET_COPY_OUT_RECOVERY)/root/system/etc/fstab.jd2018
+    $(LOCAL_PATH)/rootdir/etc/fstab.qcom:$(TARGET_COPY_OUT_RECOVERY)/root/system/etc/fstab.jd2018 \
+    $(LOCAL_PATH)/rootdir/etc/init.recovery.qcom.rc:$(TARGET_COPY_OUT_RECOVERY)/root/init.recovery.qcom.rc
 
 
 

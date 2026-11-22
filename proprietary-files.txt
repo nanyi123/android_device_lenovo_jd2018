@@ -9,7 +9,12 @@
 # 依赖 org.codeaurora.telephony.utils.RegistrantList（qti-telephony-common.jar，本机是空壳），
 # 每次开机必崩并把 com.android.phone 一起带走。LineageOS asus sdm660-common 同样不携带。
 app/embms/embms.apk
-app/QtiTelephonyService/QtiTelephonyService.apk
+# QtiTelephonyService 已移除（2026-11-19）：与 datastatusnotification 同病 ——
+# A9 QTI 的 QcRilHook 依赖 org.codeaurora.telephony.utils.RegistrantList，
+# 而 qti-telephony-common.jar 在本机是 981B 空壳 → 开机后每 0.2s 崩一次
+# （实测 4h 崩了 5640 次，把 load average 顶到 5，还拖累 com.android.phone ANR）。
+# AOSP RIL 不需要它；删掉后 telephony 走原生路径。
+#app/QtiTelephonyService/QtiTelephonyService.apk
 app/SoterService/SoterService.apk
 # AptX - from Nokia 7 Plus Onyx_00WW-user 9 PPR1.180610.011 00WW_3_22C release-keys
 # Audio
@@ -209,7 +214,7 @@ vendor/bin/hw/vendor.display.color@1.0-service
 vendor/bin/hw/vendor.qti.esepowermanager@1.0-service
 vendor/bin/hw/vendor.qti.gnss@2.0-service
 vendor/bin/hw/vendor.qti.hardware.alarm@1.0-service
-#vendor/bin/hw/vendor.qti.hardware.perf@1.0-service
+vendor/bin/hw/vendor.qti.hardware.perf@1.0-service
 vendor/bin/hw/vendor.qti.hardware.soter@1.0-service
 #vendor/bin/hw/vendor.zui.hardware.ifaa@1.0-service
 #vendor/bin/ifaa_product
@@ -370,7 +375,7 @@ vendor/etc/init/vendor.display.color@1.0-service.rc
 vendor/etc/init/vendor.qti.esepowermanager@1.0-service.rc
 vendor/etc/init/vendor.qti.gnss@2.0-service.rc
 vendor/etc/init/vendor.qti.hardware.alarm@1.0-service.rc
-#vendor/etc/init/vendor.qti.hardware.perf@1.0-service.rc
+vendor/etc/init/vendor.qti.hardware.perf@1.0-service.rc
 vendor/etc/init/vendor.qti.hardware.soter@1.0-service.rc
 #vendor/etc/init/vendor.zui.hardware.ifaa@1.0-service.rc
 vendor/etc/perf/commonresourceconfigs.xml

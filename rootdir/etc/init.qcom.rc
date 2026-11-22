@@ -76,6 +76,8 @@ on post-fs
 on early-boot
     # set RLIMIT_MEMLOCK to 64MB
     setrlimit 8 67108864 67108864
+    # Ensure Lenovo Z5 1x1 BDF is bind-mounted before modem/wlan boots
+    mount none /vendor/firmware/bdwlan_jd2018.bin /vendor/firmware_mnt/image/bdwlan.bin bind
     # Allow subsystem (modem etc) debugging
     write /sys/kernel/boot_adsp/boot 1
     write /sys/kernel/boot_cdsp/boot 1

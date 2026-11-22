@@ -56,7 +56,7 @@ LOCAL_CFLAGS += -include bionic/libc/kernel/common/linux/socket.h
 LOCAL_CFLAGS += -include bionic/libc/kernel/common/linux/un.h
 endif
 
-LOCAL_CFLAGS += -Wall -Wextra -Werror -Wno-error=fortify-source -Wno-error=unused-variable -Wno-error=unused-parameter
+LOCAL_CFLAGS += -Wall -Wextra -Werror -Wno-error=unused-but-set-variable -Wno-error=fortify-source -Wno-error=unused-variable -Wno-error=unused-parameter
 ifneq (,$(filter $(strip $(TARGET_KERNEL_VERSION)),4.9 4.14))
 LOCAL_CFLAGS += -DUSE_4_9_DEFS
 endif

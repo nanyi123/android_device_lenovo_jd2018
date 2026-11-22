@@ -96,7 +96,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.vendor.overlay.izat.optin=rro \
     persist.vendor.qcomsysd.enabled=1 \
     qemu.hw.mainkeys=0 \
-    ro.boot.hardware.sku=2018CP2613 \
     ro.build.internal=true \
     ro.cp_system_other_odex=1 \
     ro.hw.fps=true \

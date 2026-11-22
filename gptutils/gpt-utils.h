@@ -79,6 +79,14 @@ extern "C" {
 #define AB_SLOT_A_SUFFIX                "_a"
 #define AB_SLOT_B_SUFFIX                "_b"
 #define PTN_XBL                         "xbl"
+// A16 的 hardware/qcom-caf/bootctrl/boot_control.cpp:630 在 set_active_boot_slot()
+// 里按名字过滤这几个 UFS 特殊分区（xbl/xbl_config/multiimgoem/multiimgqti 在 UFS 上
+// 不做 _a/_b 后缀处理），上游 gpt-utils.h 有这些宏，本设备树这份是 A9 时代的老副本。
+// Z5 是 eMMC（gpt_utils_is_ufs_device() 为假），该分支不会执行，补宏只为止编译、
+// 不改行为；也刻意不把它们加进 PTN_SWAP_LIST（本机没有这些分区）。
+#define PTN_XBL_CFG                     "xbl_config"
+#define PTN_MULTIIMGOEM                 "multiimgoem"
+#define PTN_MULTIIMGQTI                 "multiimgqti"
 #define PTN_SWAP_LIST                   PTN_XBL, "rpm", "tz", "hyp", "storsec", "devcfg", "keymaster", "cmnlib", "cmnlib64", "prov", "pmic", "abl", "fsg"
 #define AB_PTN_LIST PTN_SWAP_LIST, "modem", "dsp", "bluetooth", "boot", "system", "vendor"
 #define BOOT_DEV_DIR    "/dev/block/bootdevice/by-name"

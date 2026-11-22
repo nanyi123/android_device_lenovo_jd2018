@@ -10,7 +10,7 @@ LOCAL_HEADER_LIBRARIES += media_plugin_headers
 LOCAL_32_BIT_ONLY := $(BOARD_QTI_CAMERA_32BIT_ONLY)
 LOCAL_CFLAGS+= -D_ANDROID_ -DQCAMERA_REDEFINE_LOG
 
-LOCAL_CFLAGS += -Wall -Wextra -Werror -Wno-unused-parameter -Wno-compound-token-split-by-macro
+LOCAL_CFLAGS += -Wall -Wextra -Werror -Wno-error=unused-but-set-variable -Wno-unused-parameter -Wno-compound-token-split-by-macro
 
 ifneq ($(TARGET_KERNEL_VERSION),$(filter $(TARGET_KERNEL_VERSION),3.18 4.4 4.9))
   ifneq ($(LIBION_HEADER_PATH_WRAPPER), )
@@ -18,8 +18,8 @@ ifneq ($(TARGET_KERNEL_VERSION),$(filter $(TARGET_KERNEL_VERSION),3.18 4.4 4.9))
     LOCAL_C_INCLUDES += $(LIBION_HEADER_PATHS)
   else
     LOCAL_C_INCLUDES += \
-            system/core/libion/kernel-headers \
-            system/core/libion/include
+            system/memory/libion/kernel-headers \
+            system/memory/libion/include
   endif
 endif
 LOCAL_C_INCLUDES+= $(kernel_includes)

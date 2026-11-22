@@ -19,12 +19,12 @@ ifneq ($(TARGET_KERNEL_VERSION),$(filter $(TARGET_KERNEL_VERSION),3.18 4.4 4.9))
     LOCAL_C_INCLUDES += $(LIBION_HEADER_PATHS)
   else
    LOCAL_C_INCLUDES += \
-           system/core/libion/kernel-headers \
-           system/core/libion/include
+           system/memory/libion/kernel-headers \
+           system/memory/libion/include
   endif
 endif
 
-LOCAL_ADDITIONAL_DEPENDENCIES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
+LOCAL_ADDITIONAL_DEPENDENCIES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/.headers_stamp
 LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
 LOCAL_C_INCLUDES+= $(kernel_includes)
 
@@ -61,7 +61,7 @@ LOCAL_MODULE:= hal3-test-app
 LOCAL_VENDOR_MODULE := true
 include $(SDCLANG_COMMON_DEFS)
 
-LOCAL_CFLAGS += -Wall -Wextra -Werror
+LOCAL_CFLAGS += -Wall -Wextra -Werror -Wno-error=unused-but-set-variable
 
 LOCAL_CFLAGS += -std=c++14 -std=gnu++1z
 

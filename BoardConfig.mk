@@ -31,10 +31,9 @@ TARGET_NO_RECOVERY := true
 TARGET_BOOTLOADER_BOARD_NAME := sdm660
 TARGET_NO_BOOTLOADER := true
 
-# Broken rules / compat for Android 14
+# Broken rules / compat
 BUILD_BROKEN_DUP_RULES := true
 BUILD_BROKEN_ELF_PREBUILT_PRODUCT_COPY_FILES := true
-BUILD_BROKEN_USES_SOONG_PYTHON2_MODULES := true
 BUILD_BROKEN_TREBLE_SYSPROP_NEVERALLOW := true
 RELAX_USES_LIBRARY_CHECK := true
 BUILD_BROKEN_VINTF_DEVICE_PATH_MAPPING := true
@@ -55,7 +54,7 @@ BOARD_KERNEL_OFFSET := 0x00008000
 BOARD_RAMDISK_OFFSET := 0x01000000
 BOARD_TAGS_OFFSET := 0x00000100
 BOARD_KERNEL_IMAGE_NAME := Image.gz-dtb
-BOARD_KERNEL_CMDLINE := console=ttyMSM0,115200,n8 androidboot.console=ttyMSM0 earlycon=msm_serial_dm,0xc170000 androidboot.hardware=qcom ehci-hcd.park=3 lpm_levels.sleep_disabled=1 swiotlb=1 firmware_class.path=/vendor/firmware_mnt/image loop.max_part=7 androidboot.boot_devices=soc/c0c4000.sdhci,c0c4000.sdhci androidboot.bootdevice=c0c4000.sdhci androidboot.force_normal_boot=1 selinux=1 androidboot.selinux=permissive enforcing=0 buildvariant=userdebug androidboot.usbcontroller=a800000.dwc3 download_mode=1 service_locator.enable=1
+BOARD_KERNEL_CMDLINE := console=ttyMSM0,115200,n8 androidboot.console=ttyMSM0 earlycon=msm_serial_dm,0xc170000 androidboot.hardware=qcom androidboot.hardware.sku=2018CP2613 ehci-hcd.park=3 lpm_levels.sleep_disabled=1 swiotlb=1 firmware_class.path=/vendor/firmware_mnt/image loop.max_part=7 androidboot.usbcontroller=a800000.dwc3 download_mode=1 service_locator.enable=1
 
 # TARGET_PREBUILT_KERNEL := $(DEVICE_PATH)/prebuilt/Image.gz-dtb
 TARGET_KERNEL_SOURCE := kernel/lenovo/jd2018
@@ -70,6 +69,14 @@ TARGET_ENFORCES_QSSI := true
 
 # Soong namespaces
 PRODUCT_SOONG_NAMESPACES += $(DEVICE_PATH)
+# A16：QC WLAN HAL（libwifi-hal-qcom）在 hardware/qcom-caf/wlan 且带 soong_namespace，
+# 不加进来 frameworks/opt/net/wifi 的 board_wlan_device=qcwcn 分支会报 undefined module
+PRODUCT_SOONG_NAMESPACES += hardware/qcom-caf/wlan
+# hardware/qcom-caf/wlan 的 soong_namespace 是空的（不 import qcwcn），
+# 而 wpa_supplicant/hostapd 通过 board_wlan_device=qcwcn 依赖 qcwcn 命名空间里的
+# lib_driver_cmd_qcwcn → 必须单独把子目录也声明进 namespace，否则
+# "wpa_supplicant depends on undefined module lib_driver_cmd_qcwcn"。
+PRODUCT_SOONG_NAMESPACES += hardware/qcom-caf/wlan/qcwcn
 
 # Audio
 BOARD_USES_ALSA_AUDIO := true
@@ -200,6 +207,9 @@ TARGET_RIL_VARIANT := caf
 # Sepolicy
 include device/qcom/sepolicy-legacy-um/SEPolicy.mk
 BOARD_VENDOR_SEPOLICY_DIRS += $(DEVICE_PATH)/sepolicy/vendor
+# vendor_mm_parser_prop 等类型声明在 system_ext private（qva/private），vendor 侧
+# 看不见这些类型，vendor_init 对它们的 allow 必须放 system_ext 私有 policy。
+SYSTEM_EXT_PRIVATE_SEPOLICY_DIRS += $(DEVICE_PATH)/sepolicy/system_ext
 
 # Treble & VNDK
 BOARD_VNDK_VERSION := current
@@ -226,6 +236,15 @@ BOARD_HOSTAPD_PRIVATE_LIB := lib_driver_cmd_$(BOARD_WLAN_DEVICE)
 BOARD_WPA_SUPPLICANT_DRIVER := NL80211
 BOARD_WPA_SUPPLICANT_PRIVATE_LIB := lib_driver_cmd_$(BOARD_WLAN_DEVICE)
 QC_WIFI_HIDL_FEATURE_DUAL_AP := true
+# A16：libwifi_hal 的 wifi_feature_flags.cpp 用这个宏决定主 chip mode 的 id：
+#   定义 → kMainModeId = chip_mode_ids::kV3 (3)
+#   未定义 → kMainModeId = chip_mode_ids::kV1Sta (0)
+# framework 侧 WifiChipInfo 缓存的 mode id 来自驱动实际并发矩阵
+# （retrieveDynamicIfaceCombination()，恒为 kV3），HAL 被 stop/start 重建
+# chip 后若退回静态 {0,1}，framework 拿缓存的 3 去 configureChip →
+# ERROR_INVALID_ARGS → "Failed to create STA iface" → WiFi 打不开。
+# 显式声明组合后静态 mode 也是 kV3，两边一致。
+WIFI_HAL_INTERFACE_COMBINATIONS := {{{STA}, 1}, {{AP}, 1}, {{P2P}, 1}}
 WPA_SUPPLICANT_VERSION := VER_0_8_X
 
 # Inherit the proprietary files
