@@ -60,6 +60,15 @@ on init
 
     chmod 660 /sys/class/leds/rgb/rgb_blink
 
+    # 高亮模式（HBM/BE）：WLED 满量程电流节点，由 light HAL 按亮度+环境光调节
+    chown system system /sys/class/leds/wled/fs_curr_ua
+    chmod 0664 /sys/class/leds/wled/fs_curr_ua
+
+# pm660l wled 可能晚于 on init 才注册 sysfs 节点，补一次
+on late-init
+    chown system system /sys/class/leds/wled/fs_curr_ua
+    chmod 0664 /sys/class/leds/wled/fs_curr_ua
+
 service light-hal-2-0 /vendor/bin/hw/android.hardware.light@2.0-service.lenovo_jd2018
     class hal
     user system

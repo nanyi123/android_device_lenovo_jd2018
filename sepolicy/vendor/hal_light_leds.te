@@ -1,3 +1,12 @@
 # jd2018: light HAL 访问 RGB LED 节点 (/sys/class/leds, genfscon 标签 sysfs_leds)
 allow hal_light_default sysfs_leds:dir search;
 allow hal_light_default sysfs_leds:file rw_file_perms;
+
+# 高亮模式：/sys/class/leds/wled/fs_curr_ua 与 /sys/class/sensors/lsensor/lux
+# 的真实路径不在 /class/leds genfscon 前缀下，标签落成通用 sysfs
+allow hal_light_default sysfs:dir search;
+allow hal_light_default sysfs:file rw_file_perms;
+
+# 光敏照度读取：/sys/class/sensors/lsensor/lux 属于 sysfs_sensors
+allow hal_light_default sysfs_sensors:dir search;
+allow hal_light_default sysfs_sensors:file r_file_perms;

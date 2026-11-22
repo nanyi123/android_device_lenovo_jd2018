@@ -1,0 +1,4 @@
+# vendor_init 设 vendor.mm.enable.qcom_parser（enforcing 适配）。
+# 该属性 label 为 vendor_mm_parser_prop（qva/private system_internal_prop 声明），
+# 类型只在 system_ext 私有可见，故此规则必须放这里而非 vendor 侧。
+allow vendor_init vendor_mm_parser_prop:property_service set;

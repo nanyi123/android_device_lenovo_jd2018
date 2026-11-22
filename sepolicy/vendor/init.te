@@ -1,0 +1,3 @@
+# Lenovo Z5 (jd2018) init sepolicy
+# Allow init to bind-mount custom bdwlan BDF on top of modem firmware file
+allow init { firmware_file vendor_firmware_file }:file mounton;

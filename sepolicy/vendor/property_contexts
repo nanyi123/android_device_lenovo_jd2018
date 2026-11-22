@@ -23,3 +23,15 @@ sys.thermal.                        u:object_r:thermal_prop:s0
 # vendor_default_prop
 fpc_kpi                             u:object_r:vendor_default_prop:s0
 gpu.stats.debug.level               u:object_r:vendor_default_prop:s0
+
+# SELinux enforcing: re-label these so vendor_init can set them.
+# default_prop has neverallow blocking vendor_init;
+# exported_default_prop is allowed for vendor_init (AOSP vendor_init.te) and globally readable.
+bt.max.hfpclient.connections        u:object_r:exported_default_prop:s0 exact int
+
+# bluetooth_prop neverallow 只豁免 bluetooth/hal_bluetooth_server（compatible_property_only
+# 块，BUILD_BROKEN_TREBLE_SYSPROP_NEVERALLOW 管不到），vendor_init 设不了。
+# qcom 对同类属性（persist.vendor.bt.a2dp_offload_cap）用的就是 vendor_bluetooth_prop，
+# 且 bluetooth 域已有 get_prop(bluetooth, vendor_bluetooth_prop) 读授权。
+# exact 全串匹配优先于 qva/private 的 persist.vendor.btstack. 前缀规则。
+persist.vendor.btstack.a2dp_offload_cap u:object_r:vendor_bluetooth_prop:s0
