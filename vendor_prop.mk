@@ -155,7 +155,8 @@ PRODUCT_PROPERTY_OVERRIDES += \
 
 # FM
 PRODUCT_PROPERTY_OVERRIDES += \
-   ro.vendor.fm.use_audio_session=true
+   ro.vendor.fm.use_audio_session=true \
+   ro.vendor.qti.va_odm.support=true
 
 #enable headset calibration
 PRODUCT_PROPERTY_OVERRIDES += \
