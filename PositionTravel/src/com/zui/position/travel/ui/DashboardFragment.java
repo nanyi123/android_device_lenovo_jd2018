@@ -1,6 +1,7 @@
 package com.zui.position.travel.ui;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -35,6 +36,14 @@ public class DashboardFragment extends Fragment {
     private TextView mTvLocationName;
     private TextView mTvCoordinates;
     private TextView mTvAltitude;
+    private boolean mUpdatingUi;
+
+    private final SharedPreferences.OnSharedPreferenceChangeListener mPrefListener =
+            (sharedPreferences, key) -> {
+                if (!mUpdatingUi && isAdded() && getView() != null) {
+                    getView().post(this::updateUi);
+                }
+            };
 
     @Nullable
     @Override
@@ -55,28 +64,33 @@ public class DashboardFragment extends Fragment {
         updateUi();
 
         mSwitchMaster.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (mUpdatingUi) return;
             mConfig.setMasterEnabled(isChecked);
             TravelIpcHelper.syncLocationToSystem(requireContext(), mConfig);
         });
 
         mSwitchBlankWifi.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (mUpdatingUi) return;
             mConfig.setBlankWifiEnabled(isChecked);
             TravelIpcHelper.syncLocationToSystem(requireContext(), mConfig);
         });
 
         mSwitchBlankCell.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (mUpdatingUi) return;
             mConfig.setBlankCellEnabled(isChecked);
             TravelIpcHelper.syncLocationToSystem(requireContext(), mConfig);
         });
 
         if (mSwitchFakeCompass != null) {
             mSwitchFakeCompass.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (mUpdatingUi) return;
                 mConfig.setFakeCompassEnabled(isChecked);
                 TravelIpcHelper.syncLocationToSystem(requireContext(), mConfig);
             });
         }
 
         mSwitchJoystick.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (mUpdatingUi) return;
             if (isChecked) {
                 if (!Settings.canDrawOverlays(requireContext())) {
                     mSwitchJoystick.setChecked(false);
@@ -106,8 +120,17 @@ public class DashboardFragment extends Fragment {
         });
 
         mTvAltitude.setOnClickListener(v -> showAltitudeDialog());
+        mConfig.registerChangeListener(mPrefListener);
 
         return view;
+    }
+
+    @Override
+    public void onDestroyView() {
+        if (mConfig != null) {
+            mConfig.unregisterChangeListener(mPrefListener);
+        }
+        super.onDestroyView();
     }
 
     private void showAltitudeDialog() {
@@ -137,18 +160,31 @@ public class DashboardFragment extends Fragment {
         updateUi();
     }
 
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if (!hidden) {
+            updateUi();
+        }
+    }
+
     private void updateUi() {
         if (mConfig == null) return;
-        mSwitchMaster.setChecked(mConfig.isMasterEnabled());
-        mSwitchJoystick.setChecked(mConfig.isJoystickEnabled());
-        if (mSwitchBlankWifi != null) {
-            mSwitchBlankWifi.setChecked(mConfig.isBlankWifiEnabled());
-        }
-        if (mSwitchBlankCell != null) {
-            mSwitchBlankCell.setChecked(mConfig.isBlankCellEnabled());
-        }
-        if (mSwitchFakeCompass != null) {
-            mSwitchFakeCompass.setChecked(mConfig.isFakeCompassEnabled());
+        mUpdatingUi = true;
+        try {
+            mSwitchMaster.setChecked(mConfig.isMasterEnabled());
+            mSwitchJoystick.setChecked(mConfig.isJoystickEnabled());
+            if (mSwitchBlankWifi != null) {
+                mSwitchBlankWifi.setChecked(mConfig.isBlankWifiEnabled());
+            }
+            if (mSwitchBlankCell != null) {
+                mSwitchBlankCell.setChecked(mConfig.isBlankCellEnabled());
+            }
+            if (mSwitchFakeCompass != null) {
+                mSwitchFakeCompass.setChecked(mConfig.isFakeCompassEnabled());
+            }
+        } finally {
+            mUpdatingUi = false;
         }
         String locName = mConfig.getLocationName();
         if ("精确坐标输入".equals(locName) || "地图点选位置".equals(locName) || locName.isEmpty()) {

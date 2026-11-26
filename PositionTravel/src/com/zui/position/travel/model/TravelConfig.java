@@ -132,4 +132,12 @@ public class TravelConfig {
     public void setLastBearing(float bearing) {
         mPrefs.edit().putFloat(KEY_LAST_BEARING, bearing).apply();
     }
+
+    public void registerChangeListener(SharedPreferences.OnSharedPreferenceChangeListener listener) {
+        mPrefs.registerOnSharedPreferenceChangeListener(listener);
+    }
+
+    public void unregisterChangeListener(SharedPreferences.OnSharedPreferenceChangeListener listener) {
+        mPrefs.unregisterOnSharedPreferenceChangeListener(listener);
+    }
 }

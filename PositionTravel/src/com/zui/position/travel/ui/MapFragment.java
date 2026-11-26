@@ -408,6 +408,21 @@ public class MapFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        refreshFieldsFromConfig();
+    }
+
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if (!hidden) {
+            refreshFieldsFromConfig();
+            if (mConfig != null) {
+                flyTo(mConfig.getLatitude(), mConfig.getLongitude());
+            }
+        }
+    }
+
+    private void refreshFieldsFromConfig() {
         if (mConfig != null) {
             if (mEtLat != null && mEtLng != null) {
                 mEtLat.setText(String.format(Locale.US, "%.6f", mConfig.getLatitude()));
