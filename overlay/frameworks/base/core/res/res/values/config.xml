@@ -215,13 +215,31 @@
          Zone N:        array[N - 1] <= LUX < array[N]
          Zone N + 1     array[N] <= LUX < infinity
          Must be overridden in platform specific overlays -->
-    <integer-array name="config_autoBrightnessLevels">
-        <item>1</item>
+    <integer-array name="config_ambientThresholdLevels">
         <item>2</item>
-        <item>3</item>
-        <item>4</item>
-        <item>8</item>
-        <item>12</item>
+        <item>10</item>
+        <item>50</item>
+        <item>500</item>
+    </integer-array>
+    <integer-array name="config_ambientBrighteningThresholds">
+        <item>2000</item>
+        <item>1000</item>
+        <item>400</item>
+        <item>200</item>
+        <item>150</item>
+    </integer-array>
+    <integer-array name="config_ambientDarkeningThresholds">
+        <item>800</item>
+        <item>500</item>
+        <item>350</item>
+        <item>250</item>
+        <item>200</item>
+    </integer-array>
+
+    <integer-array name="config_autoBrightnessLevels">
+        <item>2</item>
+        <item>5</item>
+        <item>10</item>
         <item>20</item>
         <item>33</item>
         <item>55</item>
@@ -248,13 +266,10 @@
          array. The brightness values must be non-negative and non-decreasing. This must be
          overridden in platform specific overlays -->
     <array name="config_autoBrightnessDisplayValuesNits">
-        <item>10.45935</item>   <!-- 0-1 -->
-        <item>29.25559</item>   <!-- 1-2 -->
-        <item>34.240692</item>  <!-- 2-3 -->
-        <item>37.514347</item>  <!-- 3-4 -->
-        <item>40.018696</item>  <!-- 4-8 -->
-        <item>46.885098</item>  <!-- 8-12 -->
-        <item>51.626434</item>  <!-- 12-20 -->
+        <item>10.5</item>     <!-- 0-2 -->
+        <item>18.0</item>     <!-- 2-5 -->
+        <item>28.0</item>     <!-- 5-10 -->
+        <item>44.0</item>     <!-- 10-20 -->
         <item>58.610405</item>  <!-- 20-33 -->
         <item>66.890915</item>  <!-- 33-55 -->
         <item>77.61644</item>   <!-- 55-90 -->
